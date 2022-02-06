@@ -40,6 +40,7 @@ app.get("/", async (req, res) => {
     res.send('Servidor rodando')
 })
 
+
 app.post("/cadastro", async (req, res) => {
     console.log(req.body)
     const nome = req.body.nome;
