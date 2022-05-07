@@ -7,6 +7,7 @@ import { Recado } from "./Recado";
 //import ListaRecados, {Recado} from "./listarecados";
 import cors from "cors";
 import { json } from "stream/consumers";
+import Redis from "ioredis";
 
 createConnection({
     type:'postgres',
@@ -29,6 +30,9 @@ createConnection({
     console.log("conectou no banco de dados")
 }).catch(error => console.log(error));
 
+const redisClient = new Redis({
+    //CONFIGURAÇÕES DE CONEXÃO
+})
 
 const app = express(); //armazenando em uma variavel
 app.use(express.json()); //informando que eu so aceito as informações em json
@@ -39,7 +43,6 @@ const PORT = 8000;
 app.get("/", async (req, res) => {
     res.send('Servidor rodando')
 })
-
 
 app.post("/cadastro", async (req, res) => {
     console.log(req.body)
@@ -109,6 +112,8 @@ app.post("/recado", async (req, res) => {
 
     try {
         await registroRecado.save();
+        const recados = await Recado.find({ where: { idUsuario: idUsuario } });
+        await redisClient.set(`recados-usuario-${idUsuario}`, JSON.stringify(recados))
     } catch (e) {
         res.status(400).send("Ocorreu um erro ao salvar")
         return
@@ -122,13 +127,27 @@ app.get("/listarecados/:idUsuario", async (req, res) => {
     
     let idUsuario = req.params.idUsuario
 
-    let recados = await Recado.find({ where: { idUsuario: idUsuario } });
+    let recados
+    let recadosRedis = await redisClient.get(`recados-usuario-${idUsuario}`)
+    if (recadosRedis) {
+        recados = JSON.parse(recadosRedis)
+    } else {
+        recados = await Recado.find({ where: { idUsuario: idUsuario } });
+        await redisClient.set(`recados-usuario-${idUsuario}`, JSON.stringify(recados))
+    }
 
     res.send(recados);
 })
 
 app.delete("/recado/:idRecado", async (req, res) => {
-    await Recado.delete(req.params.idRecado);
+    let idRecado = req.params.idRecado
+    let recadoDeletar = await Recado.findOne({ where: { id: idRecado } });
+    let idUsuario = recadoDeletar.idUsuario
+
+    await recadoDeletar.remove()
+
+    const recados = await Recado.find({ where: { idUsuario: idUsuario } });
+    await redisClient.set(`recados-usuario-${idUsuario}`, JSON.stringify(recados))
     
     res.send("Recado Excluído");
 })
@@ -145,6 +164,8 @@ app.put("/recado/:idRecado", async (req, res) => {
 
     try {
         await recadoNovo.save();
+        const recados = await Recado.find({ where: { idUsuario: recadoNovo.idUsuario } });
+        await redisClient.set(`recados-usuario-${recadoNovo.idUsuario}`, JSON.stringify(recados))
     } catch (e) {
         res.status(400).send("Ocorreu um erro ao salvar seu recado")
         return
