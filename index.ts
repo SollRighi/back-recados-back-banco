@@ -11,12 +11,12 @@ import Redis from "ioredis";
 
 createConnection({
     type:'postgres',
-    host: 'ec2-54-208-139-247.compute-1.amazonaws.com',
+    host: 'ec2-18-210-64-223.compute-1.amazonaws.com',
     port: 5432,
-    username: "gubtcpyjgdioyi",
-    password: "b9b70b8495d52661d9d022bc39ba9ec2eccd1167c38cbeb5a39345a69e0bf17f",
-    database: "dbq2g2k5tqm3s7",
-    //url: 'postgres://tbneegnsoznbzi:34b0e894eacaa337306254a9450d78d65a752f918e131733915ca9ebc15c0655@ec2-100-25-72-111.compute-1.amazonaws.com:5432/d4mddf7472tp48',
+    username: "oqxkjyqmolgtwn",
+    password: "b84886951bbde52c81158f7d3b33d517061441f539e390e1fdbc5ed679e4e3b8",
+    database: "d8bhafcinn5k3o",
+    //url: 'postgres://oqxkjyqmolgtwn:b84886951bbde52c81158f7d3b33d517061441f539e390e1fdbc5ed679e4e3b8@ec2-18-210-64-223.compute-1.amazonaws.com:5432/d8bhafcinn5k3o',
     entities: [CadastroUsuario,Recado],
     synchronize: true,
     logging: true,
@@ -31,7 +31,9 @@ createConnection({
 }).catch(error => console.log(error));
 
 const redisClient = new Redis({
-    //CONFIGURAÇÕES DE CONEXÃO
+    host: 'redis-12238.c81.us-east-1-2.ec2.cloud.redislabs.com',
+    port: 12238,
+    password: 'rx1NIfj9NUrY99nK3VfDdKItZ5Tj4ocX'
 })
 
 const app = express(); //armazenando em uma variavel
